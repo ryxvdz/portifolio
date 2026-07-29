@@ -1,0 +1,60 @@
+name: Deploy to EC2 (Amazon Linux)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Deploy to EC2
+      uses: appleboy/ssh-action@v0.1.10
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          cd /var/www/portfolio
+          
+          # Clonar ou atualizar
+          if [ -d ".git" ]; then
+            git pull origin main
+          else
+            git clone https://github.com/${{ github.repository }} .
+          fi
+          
+          # Instalar dependências
+          sudo pip3 install -r requirements.txt
+          
+          # Configurar serviço (Amazon Linux)
+          sudo bash -c 'cat > /etc/systemd/system/portfolio.service << EOF
+          [Unit]
+          Description=Portfolio Flask App
+          After=network.target
+          
+          [Service]
+          User=ec2-user
+          Group=ec2-user
+          WorkingDirectory=/var/www/portfolio
+          Environment="PATH=/usr/local/bin:/usr/bin"
+          ExecStart=/usr/local/bin/gunicorn --workers 3 --bind 0.0.0.0:5000 app:app
+          Restart=always
+          RestartSec=10
+          
+          [Install]
+          WantedBy=multi-user.target
+          EOF'
+          
+          # Recarregar e iniciar
+          sudo systemctl daemon-reload
+          sudo systemctl enable portfolio
+          sudo systemctl restart portfolio
+          
+          # Status
+          sudo systemctl status portfolio --no-pager
