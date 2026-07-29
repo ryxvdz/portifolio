@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ryan Dias</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #050505;
+            --panel-bg: rgba(10, 15, 20, 0.85);
+            --primary-neon: #00f3ff;
+            --secondary-neon: #00ff66;
+            --text-main: #e0e0e0;
+            --text-muted: #8892b0;
+            --border-color: #00f3ff40;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(0, 243, 255, 0.05), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(0, 255, 102, 0.05), transparent 25%);
+            color: var(--text-main);
+            font-family: 'Fira Code', monospace;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Efeito de linhas de scan do monitor */
+        body::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        .terminal-container {
+            width: 800px;
+            max-width: 90%;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.1), inset 0 0 10px rgba(0, 243, 255, 0.05);
+            backdrop-filter: blur(10px);
+            z-index: 10;
+            overflow: hidden;
+        }
+
+        .terminal-header {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .control-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .close { background-color: #ff5f56; }
+        .minimize { background-color: #ffbd2e; }
+        .maximize { background-color: #27c93f; }
+
+        .header-title {
+            margin-left: 20px;
+            color: var(--text-muted);
+            font-size: 0.9em;
+        }
+
+        .nav-bar {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(0, 243, 255, 0.05);
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-family: 'Fira Code', monospace;
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-btn:hover {
+            color: var(--primary-neon);
+            text-shadow: 0 0 8px var(--primary-neon);
+        }
+
+        .nav-btn.active {
+            color: var(--primary-neon);
+            border-bottom: 2px solid var(--primary-neon);
+            text-shadow: 0 0 8px var(--primary-neon);
+        }
+
+        .content-area {
+            padding: 25px;
+            height: 380px;
+            overflow-y: auto;
+        }
+
+        /* Esconde barra de rolagem padrão */
+        .content-area::-webkit-scrollbar { width: 8px; }
+        .content-area::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
+        .content-area::-webkit-scrollbar-thumb { background: var(--primary-neon); border-radius: 4px; }
+
+        .tab-panel {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .prompt {
+            color: var(--secondary-neon);
+            font-weight: bold;
+        }
+
+        h2, h3 {
+            color: var(--primary-neon);
+            margin-top: 0;
+            font-weight: 400;
+        }
+
+        .highlight {
+            color: var(--secondary-neon);
+        }
+
+        ul.stack-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        ul.stack-list li {
+            margin-bottom: 10px;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        ul.stack-list li::before {
+            content: ">>";
+            position: absolute;
+            left: 0;
+            color: var(--primary-neon);
+            font-size: 0.9em;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .badge {
+            display: inline-block;
+            border: 1px solid var(--secondary-neon);
+            color: var(--secondary-neon);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            background: rgba(0, 255, 102, 0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="terminal-container">
+        <div class="terminal-header">
+            <div class="window-controls">
+                <div class="control-dot close"></div>
+                <div class="control-dot minimize"></div>
+                <div class="control-dot maximize"></div>
+            </div>
+            <div class="header-title">ryan@ubuntu-server: ~/portfolio</div>
+        </div>
+
+        <nav class="nav-bar">
+            <button class="nav-btn active" onclick="switchTab('whoami', this)">./whoami</button>
+            <button class="nav-btn" onclick="switchTab('projects', this)">./operations</button>
+            <button class="nav-btn" onclick="switchTab('stack', this)">./stack</button>
+            
+            <a href="https://github.com/ryxvdz" target="_blank" class="nav-btn" style="text-decoration: none; margin-left: auto; display: flex; align-items: center; color: var(--secondary-neon);">
+                ssh git@github 
+                <span style="font-size: 1.2em; margin-left: 6px;">↗</span>
+            </a>
+        </nav>
+
+        <div class="content-area">
+            <div id="whoami" class="tab-panel active">
+                <h2><span class="prompt">ryan@dev:~$</span> cat about.txt</h2>
+                <p>Olá, eu sou <strong>Ryan Dias</strong>.</p>
+                <p>Atuo como <span class="highlight">SRE no Agibank</span>. Meu foco principal está no desenvolvimento e na sustentação de sistemas bancários e ferramentas internas utilizando Java e Spring Boot.</p>
+                <p>Trabalho diariamente na intersecção entre código e infraestrutura. Minha missão é garantir alta performance, disponibilidade e resiliência dos sistemas através de práticas de Observabilidade, CI/CD, orquestração com Docker/K8s e gestão de serviços em Cloud.</p>
+            </div>
+
+           <div id="projects" class="tab-panel">
+                <h2><span class="prompt">ryan@dev:~$</span> tail -f /var/log/daily_ops.log</h2>
+                <h3>Meu dia a dia como SRE.</h3>
+                <p>Minha atuação principal foca em garantir a resiliência do ecossistema e otimizar a experiência dos times de desenvolvimento.</p>
+                <ul class="stack-list">
+                    <li><strong>Troubleshooting e Incidentes:</strong> Diagnóstico de problemas em tempo real, investigando logs, consumo de recursos e comportamento de Pods diretamente nos clusters Kubernetes.</li>
+                    <li><strong>Suporte aos Desenvolvedores:</strong> Atuação consultiva e prática junto aos devs, ajudando a desenhar a infraestrutura das aplicações, resolver gargalos e configurar serviços em nuvem.</li>
+                    <li><strong>Integração e Deployments:</strong> Evolução contínua da nossa plataforma interna de engenharia, otimizando pipelines de CI/CD para garantir que os deploys sejam rápidos, seguros e sem impacto na performance.</li>
+                    <li><strong>Confiabilidade:</strong> Manutenção do ciclo de vida dos microsserviços, unindo o código (Java/Spring) à infraestrutura para sustentar um ambiente de alta disponibilidade.</li>
+                </ul>
+            </div>
+
+            <div id="stack" class="tab-panel">
+                <h2><span class="prompt">ryan@dev:~$</span> ls -la /tech_stack/</h2>
+                <div class="grid-container">
+                    <div>
+                        <h3 class="highlight">Cloud & Infra</h3>
+                        <span class="badge">AWS</span>
+                        <span class="badge">Azure</span>
+                        <span class="badge">Kubernetes</span>
+                        <span class="badge">Docker</span>
+                        <span class="badge">Harbor</span>
+                        <span class="badge">Linux</span>
+                    </div>
+                    <div>
+                        <h3 class="highlight">Backend</h3>
+                        <span class="badge">Java</span>
+                        <span class="badge">Spring Boot</span>
+                        <span class="badge">REST APIs</span>
+                        <span class="badge">JPA</span>
+                    </div>
+                    <div>
+                        <h3 class="highlight">Data & Ops</h3>
+                        <span class="badge">Kafka</span>
+                        <span class="badge">Prometheus</span>
+                        <span class="badge">RabbitMQ</span>
+                        <span class="badge">Kafka Streams</span>
+                        <span class="badge">Amazon MSK</span>
+                        <span class="badge">Grafana</span>
+                        <span class="badge">Gitlab CI</span>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tabId, btnElement) {
+            // Esconde todas as abas
+            document.querySelectorAll('.tab-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            
+            // Remove a classe 'active' de todos os botões
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Ativa a aba atual e o botão clicado
+            document.getElementById(tabId).classList.add('active');
+            btnElement.classList.add('active');
+        }
+    </script>
+</body>
+</html>
