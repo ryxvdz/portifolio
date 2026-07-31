@@ -15,7 +15,9 @@ jobs:
 
     - name: Get GitHub Actions IP
       run: |
-        echo "GitHub IP: $(curl -s https://api.ipify.org)"
+        echo "Runner IP: $(curl -s ifconfig.me)"
+        echo "Runner Region: $(curl -s http://ip-api.com/json/ | jq -r .regionName)"
+        echo "Runner Country: $(curl -s http://ip-api.com/json/ | jq -r .country)"
     
     - name: Deploy to EC2
       uses: appleboy/ssh-action@v0.1.10
